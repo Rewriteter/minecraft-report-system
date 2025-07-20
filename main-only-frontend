@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🎮 Minecraft Report Form</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #1e1e2f, #2f2f4f);
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      background: rgba(0,0,0,0.6);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px #00ffcc;
+      width: 100%;
+      max-width: 480px;
+      animation: fadeIn 1s ease-out;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #00ffff;
+      text-shadow: 0 0 5px #00ffff;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: none;
+      border-radius: 6px;
+      background: #333;
+      color: white;
+      font-size: 1em;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      font-size: 1.1em;
+      background: #00ffcc;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background: #00e6b8;
+      transform: scale(1.03);
+    }
+
+    #status {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 0.95em;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📢 Report Player</h2>
+    <form id="reportForm">
+      <label for="nickname">Your Minecraft Nickname:</label>
+      <input type="text" id="nickname" required>
+
+      <label for="reason">Reason:</label>
+      <textarea id="reason" rows="4" required></textarea>
+
+      <label for="media">Media (screenshot or video link):</label>
+      <input type="text" id="media" placeholder="https://example.com/image.png">
+
+      <label for="server">Server IP:</label>
+      <input type="text" id="server" placeholder="play.myserver.net" required>
+
+      <label for="webhook">Webhook URL:</label>
+      <input type="text" id="webhook" placeholder="https://discord.com/api/webhooks/..." required>
+
+      <button type="submit">🚀 Submit Report</button>
+      <div id="status"></div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("reportForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const nickname = document.getElementById("nickname").value.trim();
+      const reason = document.getElementById("reason").value.trim();
+      const media = document.getElementById("media").value.trim();
+      const server = document.getElementById("server").value.trim();
+      const webhook = document.getElementById("webhook").value.trim();
+      const status = document.getElementById("status");
+
+      if (!webhook.startsWith("https://discord.com/api/webhooks/")) {
+        status.innerHTML = "<span style='color:red'>❌ Invalid webhook URL.</span>";
+        return;
+      }
+
+      const embed = {
+        title: "🛡️ New Player Report",
+        color: 16753920,
+        fields: [
+          { name: "👤 Reporter", value: nickname || "Unknown", inline: true },
+          { name: "📡 Server", value: server || "Unknown", inline: true },
+          { name: "📄 Reason", value: reason || "No reason provided" }
+        ],
+        footer: {
+          text: "Minecraft Report System"
+        },
+        timestamp: new Date().toISOString()
+      };
+
+      if (media) embed.image = { url: media };
+
+      try {
+        const res = await fetch(webhook, {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ embeds: [embed] })
+        });
+
+        if (res.ok) {
+          status.innerHTML = "<span style='color:lime'>✅ Report submitted successfully!</span>";
+          document.getElementById("reportForm").reset();
+        } else {
+          status.innerHTML = "<span style='color:red'>❌ Failed to send report.</span>";
+        }
+      } catch (err) {
+        status.innerHTML = "<span style='color:red'>❌ Error sending request.</span>";
+      }
+    });
+  </script>
+</body>
+</html>
